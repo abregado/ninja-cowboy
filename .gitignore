@@ -9,7 +9,14 @@ obj/
 *.user
 
 # JetBrains Rider / Visual Studio
-.idea/
+.idea/**
+!.idea/.idea.Ninja Cowboy/
+!.idea/.idea.Ninja Cowboy/**
+.idea/.idea.Ninja Cowboy/.idea/workspace.xml
+.idea/.idea.Ninja Cowboy/.idea/shelf/
+.idea/.idea.Ninja Cowboy/.idea/contentModel.xml
+.idea/.idea.Ninja Cowboy/.idea/modules.xml
+.idea/.idea.Ninja Cowboy/.idea/projectSettingsUpdater.xml
 .vs/
 *.suo
 *.userprefs
@@ -20,10 +27,8 @@ Thumbs.db
 
 # Claude
 .claude/
-/build/WildJam2603.exe
-/build_linux/WildJam2603.x86_64
-/dist/WildJam2603-Linux.zip
-/dist/WildJam2603-Windows.zip
+
+# Build outputs
 /build/
 /build_debug/
 /build_linux/
