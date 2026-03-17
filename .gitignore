@@ -1,0 +1,30 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# C# / .NET build artifacts
+.mono/
+bin/
+obj/
+*.user
+
+# JetBrains Rider / Visual Studio
+.idea/
+.vs/
+*.suo
+*.userprefs
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Claude
+.claude/
+/build/WildJam2603.exe
+/build_linux/WildJam2603.x86_64
+/dist/WildJam2603-Linux.zip
+/dist/WildJam2603-Windows.zip
+/build/
+/build_debug/
+/build_linux/
+/dist/

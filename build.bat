@@ -1,0 +1,52 @@
+@echo off
+setlocal
+
+set GODOT=D:\Programs\Godot_v4.6.1-stable_mono_win64\Godot_v4.6.1-stable_mono_win64.exe
+set PROJECT_DIR=%~dp0
+set PROJECT_DIR_NOSLASH=%PROJECT_DIR:~0,-1%
+set DIST_DIR=%PROJECT_DIR%dist
+
+if not exist "%PROJECT_DIR%Ninja Cowboy.sln" (
+    echo ERROR: Ninja Cowboy.sln not found.
+    echo In the Godot editor: Project ^> Tools ^> C# ^> Create C# Solution
+    exit /b 1
+)
+
+echo === Building C# assemblies ===
+dotnet build "%PROJECT_DIR%Ninja Cowboy.sln" --configuration ExportRelease
+if errorlevel 1 (
+    echo ERROR: dotnet build failed
+    exit /b 1
+)
+
+echo === Preparing output directories ===
+if exist "%PROJECT_DIR%build"       rmdir /s /q "%PROJECT_DIR%build"
+if exist "%PROJECT_DIR%build_linux" rmdir /s /q "%PROJECT_DIR%build_linux"
+if exist "%DIST_DIR%"               rmdir /s /q "%DIST_DIR%"
+mkdir "%PROJECT_DIR%build"
+mkdir "%PROJECT_DIR%build_linux"
+mkdir "%DIST_DIR%"
+
+echo === Exporting Windows build ===
+"%GODOT%" --headless --path "%PROJECT_DIR_NOSLASH%" --export-release "Windows Desktop" "%PROJECT_DIR%build\NinjaCowboy.exe"
+if errorlevel 1 (
+    echo ERROR: Windows export failed
+    exit /b 1
+)
+
+echo === Exporting Linux build ===
+"%GODOT%" --headless --path "%PROJECT_DIR_NOSLASH%" --export-release "Linux" "%PROJECT_DIR%build_linux\NinjaCowboy.x86_64"
+if errorlevel 1 (
+    echo ERROR: Linux export failed
+    exit /b 1
+)
+
+echo === Packaging distributables ===
+powershell -NoProfile -Command "Compress-Archive -Path '%PROJECT_DIR%build\*'       -DestinationPath '%DIST_DIR%\NinjaCowboy-Windows.zip' -Force"
+powershell -NoProfile -Command "Compress-Archive -Path '%PROJECT_DIR%build_linux\*' -DestinationPath '%DIST_DIR%\NinjaCowboy-Linux.zip'   -Force"
+
+echo.
+echo Build complete:
+echo   dist\NinjaCowboy-Windows.zip
+echo   dist\NinjaCowboy-Linux.zip
+endlocal

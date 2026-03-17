@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+GODOT="${GODOT:-D:/Programs/Godot_v4.6.1-stable_mono_win64/Godot_v4.6.1-stable_mono_win64.exe}"
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DIST_DIR="$PROJECT_DIR/dist"
+
+echo "=== Building C# assemblies ==="
+dotnet build "$PROJECT_DIR/Ninja Cowboy.sln" --configuration ExportRelease
+
+echo "=== Preparing output directories ==="
+rm -rf "$PROJECT_DIR/build" "$PROJECT_DIR/build_linux" "$DIST_DIR"
+mkdir -p "$PROJECT_DIR/build" "$PROJECT_DIR/build_linux" "$DIST_DIR"
+
+echo "=== Exporting Windows build ==="
+"$GODOT" --headless --path "$PROJECT_DIR" --export-release "Windows Desktop" "$PROJECT_DIR/build/NinjaCowboy.exe"
+
+echo "=== Exporting Linux build ==="
+"$GODOT" --headless --path "$PROJECT_DIR" --export-release "Linux" "$PROJECT_DIR/build_linux/NinjaCowboy.x86_64"
+
+echo "=== Packaging distributables ==="
+_zip() {
+    local src="$1" dest="$2"
+    if command -v zip &>/dev/null; then
+        (cd "$src" && zip -r "$dest" .)
+    else
+        powershell -NoProfile -Command "Compress-Archive -Path '$(cygpath -w "$src")\\*' -DestinationPath '$(cygpath -w "$dest")' -Force"
+    fi
+}
+
+_zip "$PROJECT_DIR/build"       "$DIST_DIR/NinjaCowboy-Windows.zip"
+_zip "$PROJECT_DIR/build_linux" "$DIST_DIR/NinjaCowboy-Linux.zip"
+
+echo ""
+echo "Build complete:"
+echo "  dist/NinjaCowboy-Windows.zip"
+echo "  dist/NinjaCowboy-Linux.zip"
