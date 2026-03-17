@@ -25,11 +25,15 @@ public partial class BoardingSequence : CanvasLayer
 
     public async Task PlayAsync()
     {
+        // Node2D container owns all visuals — CanvasLayer has no modulate property
+        var root = new Node2D();
+        AddChild(root);
+
         // ── 1. Two ships slide in ─────────────────────────────────────────────
         var cowboyShip = MakeShip(new Color(0.05f, 0.09f, 0.15f), new Vector2(1380, 440));
         var ninjaShip  = MakeShip(new Color(0.07f, 0.04f, 0.10f), new Vector2(-300, 440));
-        AddChild(cowboyShip);
-        AddChild(ninjaShip);
+        root.AddChild(cowboyShip);
+        root.AddChild(ninjaShip);
 
         var shipTween = CreateTween();
         shipTween.TweenProperty(ninjaShip, "position", new Vector2(260, 440), 1.0f);
@@ -46,14 +50,14 @@ public partial class BoardingSequence : CanvasLayer
                 Texture  = ninjaTex,
                 Position = new Vector2(300, 500 + i * 30)
             };
-            AddChild(ns);
+            root.AddChild(ns);
 
             var targetPos = _grid.CellToWorld(_boardingTiles[i]);
             var jt = CreateTween();
             jt.TweenProperty(ns, "position", targetPos, 0.40f);
             await ToSignal(jt, "finished");
 
-            await Flash(_boardingTiles[i]);
+            await Flash(_boardingTiles[i], root);
             ns.Visible = false; // ninja placed by BattleScene
 
             await ToSignal(GetTree().CreateTimer(0.08), "timeout");
@@ -63,7 +67,7 @@ public partial class BoardingSequence : CanvasLayer
 
         // ── 3. Fade out ───────────────────────────────────────────────────────
         var fade = CreateTween();
-        fade.TweenProperty(this, "modulate:a", 0f, 0.4f);
+        fade.TweenProperty(root, "modulate:a", 0f, 0.4f);
         await ToSignal(fade, "finished");
 
         QueueFree();
@@ -79,7 +83,7 @@ public partial class BoardingSequence : CanvasLayer
         };
     }
 
-    private async Task Flash(Vector2I cell)
+    private async Task Flash(Vector2I cell, Node2D parent)
     {
         int ts = GridManager.TileSize;
         var worldPos = _grid.CellToWorld(cell);
@@ -89,7 +93,7 @@ public partial class BoardingSequence : CanvasLayer
             Size     = new Vector2(ts, ts),
             Position = worldPos - new Vector2(ts * 0.5f, ts * 0.5f)
         };
-        AddChild(flash);
+        parent.AddChild(flash);
 
         var ft = CreateTween();
         ft.TweenProperty(flash, "modulate:a", 0f, 0.4f);
